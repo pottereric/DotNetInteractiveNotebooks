@@ -1,0 +1,52 @@
+#!markdown
+
+One nice feature of Notebooks is that the _display_ function returns an object that can update the displayed value. So unlike console functions that display a list of updated values, Notebooks allow you to update values in place. 
+
+#!csharp
+
+var numberWords = new List<string>(){"one", "two", "three", "four"};
+
+var output = display("starting");
+foreach(var numberWord in numberWords)
+{
+    System.Threading.Thread.Sleep(500);
+    output.Update(numberWord);
+}
+
+#!markdown
+
+I wanted to know what Notebooks could do with asynchronous code. So I created two simple methods that code runs for a long enough period that their asynchronous behavior would be obviously noticeable. Both functions display their current activity and continuously update it in place. 
+
+#!csharp
+
+async Task DisplaySquares(IEnumerable<int> numbers)
+{
+    var squaresOutput = display("");
+    foreach(var num in numbers)
+    {
+        await Task.Delay(100);
+        squaresOutput.Update($"square {num * num}");
+    }
+}
+
+async Task DisplayCubes(IEnumerable<int> numbers)
+{
+    var cubesOutput = display("");
+    foreach(var num in numbers)
+    {
+        await Task.Delay(100);
+        cubesOutput.Update($"cube {num * num * num}");
+    }
+}
+
+#!markdown
+
+Then I invoke both functions, assign their tasks into variables, and then use Task.AwaitAll to wait until both functions run to completion. When the code is executed, you can see that both functions are executing at the same time. (Yes, I know that they aren't necessarily running simultaneously at the CPU level.)
+
+#!csharp
+
+var OneToOneHundred = Enumerable.Range(1, 100);
+var t1 = DisplaySquares(OneToOneHundred);
+var t2 = DisplayCubes(OneToOneHundred);
+display("waiting");
+await Task.WhenAll(t1, t2);
